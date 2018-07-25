@@ -1,0 +1,6 @@
+[submodule "externals/vst3sdk"]
+	path = externals/vst3sdk
+	url = https://github.com/steinbergmedia/vst3sdk.git
+[submodule "externals/nana"]
+	path = externals/nana
+	url = https://github.com/cnjinhao/nana.git

@@ -1,0 +1,2 @@
+add_subdirectory(staging)
+add_subdirectory(plugins)
