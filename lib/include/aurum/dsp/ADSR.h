@@ -7,10 +7,14 @@
 namespace au {
 namespace dsp {
 
+/**
+ * @brief Linear ADSR envelope generator.
+ */
 class ADSR : public au::dsp::Processor
 {
 public:
 
+    /// ADSR state.
     enum class State
     {
         Attack,

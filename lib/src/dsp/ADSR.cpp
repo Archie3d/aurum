@@ -6,10 +6,10 @@ namespace dsp {
 ADSR::ADSR()
     : m_state(State::Off),
       m_envelope(0.0),
-      m_attack(0.1),
-      m_decay(0.1),
-      m_sustain(0.8),
-      m_release(0.1)
+      m_attack(0.5),
+      m_decay(0.5),
+      m_sustain(0.5),
+      m_release(0.5)
 {
     recalculateRates();
 }
@@ -61,14 +61,31 @@ double ADSR::envelope() const
 
 void ADSR::triggerOn()
 {
-    m_state = State::Attack;
+    if (m_attack > 0.0) {
+        m_state = State::Attack;
+    } else if (m_decay > 0.0) {
+        m_envelope = 1.0;
+        m_state = State::Decay;
+    } else if (m_sustain > 0.0) {
+        m_envelope = m_sustain;
+        m_state = State::Sustain;
+    } else {
+        // envelope is null
+        m_state = State::Off;
+        return;
+    }
     setEnabled(true);
 }
 
 void ADSR::triggerOff()
 {
     if (m_state != State::Off) {
-        m_state = State::Release;
+        if (m_release > 0.0) {
+            m_state = State::Release;
+        } else {
+            // No release
+            setEnabled(false);
+        }
     }
 }
 
@@ -92,14 +109,14 @@ double ADSR::tickProcess(double*, int)
 
 void ADSR::recalculateRates()
 {
-    double sr = Global::sampleRate();    
-    m_attackRate = 1.0 / (m_attack * sr);
-    m_decayRate = (m_sustain - 1.0) / (m_decay * sr);
+    double sr = Global::sampleRate();
+    m_attackRate = m_attack > 0.0 ? 1.0/m_attack/sr : 0.0;
+    m_decayRate = m_decay > 0.0 ? (m_sustain - 1.0) / (m_decay * sr) : 0.0;
 
     // The release rate is fixed based on the sustain level,
     // but the actual release time may vary depending on the
-    // envelope level at the moment the resease state is requested.
-    m_releaseRate = -m_sustain / (m_release * sr);
+    // envelope level at the moment the resease state is requested.    
+    m_releaseRate = m_release > 0.0 ? -m_sustain / (m_release * sr) : 0.0;
 }
 
 void ADSR::process()
@@ -130,7 +147,6 @@ void ADSR::process()
     case State::Release:
         m_envelope += m_releaseRate;
         if (m_envelope <= 0.0) {
-            m_envelope = 0.0;
             setEnabled(false);
         }
         break;

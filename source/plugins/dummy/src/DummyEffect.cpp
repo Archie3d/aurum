@@ -9,17 +9,27 @@
 #include "DummyEffect.h"
 
 
-class SineVoice : public au::dsp::Voice
+class MultiVoice : public au::dsp::Voice
 {
 public:
-    SineVoice()
+    MultiVoice()
         : m_tuning(),
           m_adsr(),
+          m_volume_sine(0.0),
+          m_volume_triangle(0.0),
+          m_volume_square(0.0),
+          m_volume_saw(0.0),
           m_lastSample(0.0)
     {
     }
 
+
     au::dsp::ADSR& adsr() { return m_adsr; }
+
+    void volume_sine(double v) { m_volume_sine = v; }
+    void volume_triangle(double v) { m_volume_triangle = v; }
+    void volume_square(double v) { m_volume_square = v; }
+    void volume_saw(double v) { m_volume_saw = v; }
 
     double tickProcess(double *input, int nChannels) override
     {
@@ -30,7 +40,11 @@ public:
             setEnabled(false);
         } else {
             double envelope = m_adsr.tick();
-            m_lastSample = envelope * m_generator.tick();
+            m_lastSample = envelope * (
+                        m_volume_sine * m_osc_sine.tick()
+                        + m_volume_triangle * m_osc_triangle.tick()
+                        + m_volume_square * m_osc_square.tick()
+                        + m_volume_saw * m_osc_saw.tick());
         }
 
         return m_lastSample;
@@ -44,7 +58,10 @@ public:
     void noteOn(const au::midi::Note &note)
     {
         double f = m_tuning.frequency(note);
-        m_generator.frequency(f);
+        m_osc_sine.frequency(f);
+        m_osc_triangle.frequency(f);
+        m_osc_square.frequency(f);
+        m_osc_saw.frequency(f);
         m_adsr.triggerOn();
         setEnabled(true);
     }    
@@ -57,16 +74,47 @@ public:
 private:
     au::midi::EqualTemperament m_tuning;
     au::dsp::ADSR m_adsr;
-    au::dsp::Generator<au::dsp::function::Saw_blep> m_generator;
+    double m_volume_sine;
+    double m_volume_triangle;
+    double m_volume_square;
+    double m_volume_saw;
+    au::dsp::Generator<au::dsp::function::Sine> m_osc_sine;
+    au::dsp::Generator<au::dsp::function::Triangle> m_osc_triangle;
+    au::dsp::Generator<au::dsp::function::Square_blep> m_osc_square;
+    au::dsp::Generator<au::dsp::function::Saw_blep> m_osc_saw;
     double m_lastSample;
 };
 
 
-class Instrument : public au::dsp::Instrument<SineVoice, 16>
+class Instrument : public au::dsp::Instrument<MultiVoice, 64, au::dsp::NoVoiceStealing>
 {
 public:
     Instrument()
     {
+    }
+
+    void volume_sine(double v) {
+        for (auto &voice : voices()) {
+            voice.volume_sine(v);
+        }
+    }
+
+    void volume_triangle(double v) {
+        for (auto &voice : voices()) {
+            voice.volume_triangle(v);
+        }
+    }
+\
+    void volume_square(double v) {
+        for (auto &voice : voices()) {
+            voice.volume_square(v);
+        }
+    }
+
+    void volume_saw(double v) {
+        for (auto &voice : voices()) {
+            voice.volume_saw(v);
+        }
     }
 
     void attack(double v)
@@ -141,6 +189,18 @@ void DummyEffect::noteOff(int number, float velocity)
 void DummyEffect::parameterChanged(int id, double value)
 {
     switch (id) {
+    case Param_Sine:
+        d->instrument.volume_sine(value);
+        break;
+    case Param_Triangle:
+        d->instrument.volume_triangle(value);
+        break;
+    case Param_Square:
+        d->instrument.volume_square(value);
+        break;
+    case Param_Saw:
+        d->instrument.volume_saw(value);
+        break;
     case Param_Attack:
         d->instrument.attack(value);
         break;

@@ -1,8 +1,15 @@
 #pragma once
 
 enum Params {
-    Param_Attack = 0,
-    Param_Decay = 1,
-    Param_Sustain = 2,
-    Param_Release = 3
+    // OSC volumes
+    Param_Sine,
+    Param_Triangle,
+    Param_Square,
+    Param_Saw,
+
+    // ADSR
+    Param_Attack,
+    Param_Decay,
+    Param_Sustain,
+    Param_Release
 };
