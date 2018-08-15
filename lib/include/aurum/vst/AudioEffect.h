@@ -49,7 +49,7 @@ struct ParametersChange
 
 /**
  * Helper structure to forward MIDI events if
- * Audio Effect is IMidiListener.
+ * Audio Effect is IMidiInput.
  */
 template <bool cond, class P>
 struct MidiEvents
@@ -93,7 +93,7 @@ struct MidiEvents
     template <bool c=cond, typename std::enable_if<c>::type* = nullptr>
     static void addMidiInputBus(Steinberg::Vst::AudioEffect *pAE, int channels=16)
     {
-        pAE->addEventInput(STR16("MIDI in"), channels);
+        pAE->addEventInput(STR16("MIDI In"), channels);
     }
 
     template <bool c=cond, typename std::enable_if<!c>::type* = nullptr>
@@ -102,6 +102,10 @@ struct MidiEvents
     }
 };
 
+/**
+ * Helper structure to forward audio processing
+ * calls if Audio Effect is IStereoOutput.
+ */
 template <bool cond, class P>
 struct StereoOutput
 {
@@ -138,11 +142,20 @@ struct StereoOutput
 
 } // namespace meta
 
+/**
+ * @brief VST audio effect.
+ *
+ * This is VST3 AudioEffect proxy for au::plugin::IAudioEffect.
+ */
 template <class A, class U=au::vst::UID<0, 0, 0, 0> >
 class AudioEffect final : public Steinberg::Vst::AudioEffect
 {
 public:
 
+    /**
+     * @brief Create an instance of this audio effect.
+     * @return
+     */
     static Steinberg::FUnknown* createInstance(void*)
     {
         return (Steinberg::Vst::IAudioProcessor*)new AudioEffect<A, U>();
@@ -155,45 +168,80 @@ public:
         static_assert(std::is_base_of<au::plugin::IAudioEffect, A>::value,
                       "Audio Effect must implement au::plugin::IAudioEffect interface");
 
+        // Pass the controller class UID
         setControllerClass(U::value());
 
+        // List wrapped audio effect class with this proxy.
         m_audioEffect.bind(this);
     }
 
     AudioEffect(const AudioEffect&) = delete;
     AudioEffect& operator =(const AudioEffect&) = delete;
 
+    /**
+     * @brief Initialize the audio effect.
+     *
+     * This will initialize the wrapped effect, and create the MIDI and
+     * audio busses, depending on whether the wrapped class implements
+     * corresponding interfaces.
+     *
+     * @param pContext
+     * @return
+     */
     Steinberg::tresult PLUGIN_API initialize(Steinberg::FUnknown *pContext) override
     {
         m_audioEffect.initialize();
-        meta::MidiEvents<isMidiListener, A>::addMidiInputBus(this);
+        meta::MidiEvents<isMidiInput, A>::addMidiInputBus(this);
         meta::StereoOutput<isStereoOutput, A>::addAudioOutputBus(this);
         return Steinberg::Vst::AudioEffect::initialize(pContext);
     }
 
+    /**
+     * @brief Finalize the audio effect.
+     * @return
+     */
     Steinberg::tresult PLUGIN_API terminate() override
     {
         m_audioEffect.finalize();
         return Steinberg::Vst::AudioEffect::terminate();
     }
 
+    /**
+     * @brief Initialize processing.
+     *
+     * This method is normally called by the host before the processing starts.
+     * The wrapped audio effect is configured with passed sample rate.
+     *
+     * @param setup
+     * @return
+     */
     Steinberg::tresult PLUGIN_API setupProcessing(Steinberg::Vst::ProcessSetup &setup) override
     {
         m_audioEffect.setSampleRate(setup.sampleRate);
         return Steinberg::Vst::AudioEffect::setupProcessing(setup);
     }
 
+    /**
+     * @brief Activate or disactivate ths audio effetct.
+     * @param state
+     * @return
+     */
     Steinberg::tresult PLUGIN_API setActive(Steinberg::TBool state) override
     {
         m_audioEffect.setActive(state != 0);
         return Steinberg::kResultOk;
     }
 
+    /**
+     * @brief Run processing.
+     * @param data
+     * @return
+     */
     Steinberg::tresult PLUGIN_API process(Steinberg::Vst::ProcessData &data) override
     {
         if (m_audioEffect.isActive()) {
             meta::ParametersChange<isParametersListener, A>::handle(m_audioEffect, data);
-            meta::MidiEvents<isMidiListener, A>::handle(m_audioEffect, data.inputEvents);
+            meta::MidiEvents<isMidiInput, A>::handle(m_audioEffect, data.inputEvents);
             meta::StereoOutput<isStereoOutput, A>::process(m_audioEffect, data);
         }
         return Steinberg::kResultOk;
@@ -201,7 +249,7 @@ public:
 
 private:
     static constexpr bool isParametersListener = std::is_base_of<au::plugin::IParametersListener, A>::value;
-    static constexpr bool isMidiListener = std::is_base_of<au::plugin::IMidiListener, A>::value;
+    static constexpr bool isMidiInput = std::is_base_of<au::plugin::IMidiInput, A>::value;
     static constexpr bool isStereoOutput = std::is_base_of<au::plugin::IStereoOutput, A>::value;
 
     A m_audioEffect;

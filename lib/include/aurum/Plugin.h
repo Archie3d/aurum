@@ -225,10 +225,10 @@ public:
     virtual void parameterChanged(int id, double value) = 0;
 };
 
-class IMidiListener
+class IMidiInput
 {
 public:
-    virtual ~IMidiListener() = default;
+    virtual ~IMidiInput() = default;
     virtual void noteOn(int number, float velocity) = 0;
     virtual void noteOff(int number, float velocity) = 0;
 };

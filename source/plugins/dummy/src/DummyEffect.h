@@ -4,9 +4,9 @@
 #include "aurum/Plugin.h"
 
 class DummyEffect : public au::plugin::AudioEffect,
-                    public au::plugin::IMidiListener,
-                    public au::plugin::IParametersListener,
-                    public au::plugin::IStereoOutput
+                    public au::plugin::IMidiInput,
+                    public au::plugin::IStereoOutput,
+                    public au::plugin::IParametersListener
 {
 public:
     DummyEffect();
@@ -16,7 +16,7 @@ public:
     void start() override;
     void stop() override;
 
-    // IMidiListener
+    // IMidiInput
     void noteOn(int number, float velocity) override;
     void noteOff(int number, float velocity) override;
 
