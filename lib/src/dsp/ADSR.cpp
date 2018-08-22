@@ -61,6 +61,7 @@ double ADSR::envelope() const
 
 void ADSR::triggerOn()
 {
+    m_envelope = 0.0;
     if (m_attack > 0.0) {
         m_state = State::Attack;
     } else if (m_decay > 0.0) {
@@ -74,7 +75,7 @@ void ADSR::triggerOn()
         m_state = State::Off;
         return;
     }
-    setEnabled(true);
+    setEnabled(m_state != State::Off);
 }
 
 void ADSR::triggerOff()
@@ -136,7 +137,6 @@ void ADSR::process()
             if (m_envelope > 0.0) {
                 m_state = State::Sustain;
             } else {
-                m_state = State::Off;
                 setEnabled(false);
             }
         }

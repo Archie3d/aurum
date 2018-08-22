@@ -8,14 +8,12 @@
 struct DummyView::UI
 {
     nana::group vco_group;
-
     nana::slider vco_slider_sine;
     nana::slider vco_slider_triangle;
     nana::slider vco_slider_square;
     nana::slider vco_slider_saw;
 
     nana::group adsr_group;
-
     nana::label adsr_label_a;
     nana::label adsr_label_d;
     nana::label adsr_label_s;
@@ -25,6 +23,10 @@ struct DummyView::UI
     nana::slider adsr_slider_d;
     nana::slider adsr_slider_s;
     nana::slider adsr_slider_r;
+
+    nana::group filter_group;
+    nana::slider filter_slider_cutoff;
+    nana::slider filter_slider_resonance;
 
     UI(nana::form &form, au::plugin::ParameterContainer &params)        
     {
@@ -171,6 +173,44 @@ struct DummyView::UI
         adsr_group["rl"] << adsr_label_r;
         adsr_group["r"] << adsr_slider_r;
         adsr_group.collocate();
+
+        //------------------------------
+        //  Filter group
+        //------------------------------
+
+        filter_group.create(form);
+        filter_group.caption("Filter");
+        filter_group.move(nana::rectangle{220, 10, 100, 160});
+
+        // Cut-off
+        filter_slider_cutoff.create(filter_group);
+        filter_slider_cutoff.transparent(true);
+        filter_slider_cutoff.vertical(true);
+        filter_slider_cutoff.maximum(100);
+        filter_slider_cutoff.value(filter_slider_cutoff.maximum() * params[Param_FilterCutOff].value());
+        filter_slider_cutoff.events().value_changed([&] {
+            params[Param_FilterCutOff] = double(filter_slider_cutoff.value()) / double(filter_slider_cutoff.maximum());
+        });
+
+        // Resonance
+        filter_slider_resonance.create(filter_group);
+        filter_slider_resonance.transparent(true);
+        filter_slider_resonance.vertical(true);
+        filter_slider_resonance.maximum(100);
+        filter_slider_resonance.value(filter_slider_resonance.maximum() * params[Param_FilterResonance].value());
+        filter_slider_resonance.events().value_changed([&] {
+            params[Param_FilterResonance] = double(filter_slider_resonance.value()) / double(filter_slider_resonance.maximum());
+        });
+
+        filter_group.div(
+                    "horiz margin=10 "
+                    "<vert <cutoffl><weight=80% cutoff>>"
+                    "<><vert <resonancel><weight=80% resonance>>"
+        );
+
+        filter_group["cutoff"] << filter_slider_cutoff;
+        filter_group["resonance"] << filter_slider_resonance;
+        filter_group.collocate();
     }
 };
 

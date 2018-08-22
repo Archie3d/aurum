@@ -11,5 +11,9 @@ enum Params {
     Param_Attack,
     Param_Decay,
     Param_Sustain,
-    Param_Release
+    Param_Release,
+
+    // Filter
+    Param_FilterCutOff,
+    Param_FilterResonance
 };

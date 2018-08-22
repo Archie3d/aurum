@@ -6,6 +6,7 @@
 #include "aurum/dsp/ADSR.h"
 #include "aurum/dsp/Generator.h"
 #include "aurum/dsp/Functions.h"
+#include "aurum/dsp/BiquadFilter.h"
 #include "DummyEffect.h"
 
 
@@ -22,7 +23,6 @@ public:
           m_lastSample(0.0)
     {
     }
-
 
     au::dsp::ADSR& adsr() { return m_adsr; }
 
@@ -85,12 +85,16 @@ private:
     double m_lastSample;
 };
 
-
-class Instrument : public au::dsp::Instrument<MultiVoice, 64, au::dsp::NoVoiceStealing>
+using InstrumentDefinition = au::dsp::Instrument<MultiVoice, 64, au::dsp::NoVoiceStealing>;
+class Instrument : public InstrumentDefinition
 {
 public:
     Instrument()
+        : m_filter(au::dsp::Filter::Type::LowPass),
+          m_lastSample(0.0)
     {
+        m_filter.setSampleRate(sampleRate());
+        m_filter.setCutOffFrequency(1500.0);
     }
 
     void volume_sine(double v) {
@@ -144,6 +148,49 @@ public:
             voice.adsr().release(v);
         }
     }
+
+    void filter_cutOff(double f)
+    {
+        m_filter.setCutOffFrequency(f);
+    }
+
+    void filter_resonance(double q)
+    {
+        m_filter.setQFactor(q);
+    }
+
+    void setEnabled(bool ena) override
+    {
+        InstrumentDefinition::setEnabled(ena);
+        if (ena) {
+            m_filter.setSampleRate(sampleRate());
+            m_filter.recalculate();
+        }
+    }
+
+    void reset() override
+    {
+        InstrumentDefinition::reset();
+        m_filter.reset();
+    }
+
+    double tickProcess(double *input, int nChannels)
+    {
+        double dry = InstrumentDefinition::tickProcess(input, nChannels);
+        m_lastSample = m_filter.tick(dry);
+        return m_lastSample;
+    }
+
+    double lastSample(int channel) const override
+    {
+        (void)channel;
+        return m_lastSample;
+    }
+
+private:
+
+    au::dsp::BiquadFilter m_filter;
+    double m_lastSample;
 };
 
 struct DummyEffect::Impl
@@ -212,6 +259,12 @@ void DummyEffect::parameterChanged(int id, double value)
         break;
     case Param_Release:
         d->instrument.release(value);
+        break;
+    case Param_FilterCutOff:
+        d->instrument.filter_cutOff(1500.0 * value);
+        break;
+    case Param_FilterResonance:
+        d->instrument.filter_resonance(0.7 + value * 15);
         break;
     default:
         break;

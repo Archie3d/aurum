@@ -4,6 +4,16 @@
 namespace au {
 namespace dsp {
 
+namespace math {
+
+constexpr double PI = 3.14159265358979323846264338327950288;
+constexpr double PI2 = 2.0 * PI;
+constexpr double PI_2 = 0.5 * PI;
+constexpr double PI_SQUARED = PI*PI;
+constexpr double PI_SQUARED_1 = 1.0 / PI_SQUARED;
+
+} // namespace math
+
 /**
  * @brief Global DSP configuration object.
  */

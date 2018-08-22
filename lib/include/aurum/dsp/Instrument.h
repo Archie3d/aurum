@@ -7,13 +7,16 @@
 namespace au {
 namespace dsp {
 
-template <class V, unsigned polyphony=1, class VoiceAllocator=au::dsp::NoVoiceStealing>
+/**
+ * @brief Instrument synthesizer.
+ */
+template <class V, size_t Polyphony=1, class VoiceAllocator=au::dsp::NoVoiceStealing>
 class Instrument : public Processor,
                    public INotesListener
 {
 public:
     Instrument()
-        : m_voices(polyphony),
+        : m_voices(Polyphony),
           m_voiceAllocator(m_voices),
           m_lastSample(0.0),
           m_volume(1.0)

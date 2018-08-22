@@ -16,6 +16,9 @@ public:
     virtual void noteOff(const midi::Note &note) = 0;
 };
 
+/**
+ * @brief Abstract synth voice.
+ */
 class Voice : public Processor,
               public INotesListener
 {
@@ -27,6 +30,9 @@ private:
     int m_noteNumber;
 };
 
+/**
+ * @brief Interface to the list of voices.
+ */
 class IVoiceList
 {
 public:
@@ -36,6 +42,9 @@ public:
     virtual Voice& operator[](size_t i) = 0;
 };
 
+/**
+ * @brief List of voices of given type.
+ */
 template <class V>
 class VoiceList : public IVoiceList
 {
@@ -80,6 +89,12 @@ private:
     std::vector<V> m_voices;
 };
 
+/**
+ * @brief Interface to voices allocation strategy.
+ *
+ * Voice allocation strategy deals with situations when all the voices
+ * are busy but new incoming noted are to be handled.
+ */
 class IVoiceAllocationStrategy
 {
 public:
@@ -87,6 +102,11 @@ public:
     virtual bool allocate(const midi::Note &note, size_t &idx) = 0;
 };
 
+/**
+ * @brief No voice stealing strategy.
+ *
+ * When all voices are busy, incoming new notes will be ignored.
+ */
 class NoVoiceStealing : public IVoiceAllocationStrategy
 {
 public:
