@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <vector>
+#include <queue>
 #include "aurum/dsp/Processor.h"
 
 namespace au {
@@ -114,8 +115,26 @@ public:
     explicit NoVoiceStealing(IVoiceList &vl);
     bool allocate(const midi::Note &note, size_t &idx) override;
 
+protected:
+
+    IVoiceList& voices() { return m_list; }
+    const IVoiceList& voices() const { return m_list; }
+
 private:
     IVoiceList &m_list;
+};
+
+/**
+ * @brief Steal the oldest voice.
+ */
+class OldestVoiceStealing : public NoVoiceStealing
+{
+public:
+    explicit OldestVoiceStealing(IVoiceList &vl);
+    bool allocate(const midi::Note &note, size_t &idx) override;
+
+private:
+    std::queue<size_t> m_allocationHistory;
 };
 
 

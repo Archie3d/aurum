@@ -35,6 +35,36 @@ bool NoVoiceStealing::allocate(const midi::Note &note, size_t &idx)
     return false;
 }
 
+//----------------------------------------------------------
+//  OldestVoiceStealing
+//----------------------------------------------------------
+
+OldestVoiceStealing::OldestVoiceStealing(IVoiceList &vl)
+    : NoVoiceStealing(vl),
+      m_allocationHistory()
+{
+}
+
+bool OldestVoiceStealing::allocate(const midi::Note &note, size_t &idx)
+{
+    bool allocated = NoVoiceStealing::allocate(note, idx);
+    if (allocated) {
+        m_allocationHistory.push(idx);
+    } else {
+        // All voices are busy - get the oldest one
+        if (m_allocationHistory.size() > 0) {
+            idx = m_allocationHistory.front();
+            allocated = true;
+        }
+    }
+
+    // Remove old allocations
+    while (m_allocationHistory.size() > voices().size()) {
+        m_allocationHistory.pop();
+    }
+
+    return allocated;
+}
 
 } // namespace dsp
 } // namespace au

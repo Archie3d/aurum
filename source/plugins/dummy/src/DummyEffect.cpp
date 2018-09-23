@@ -85,7 +85,16 @@ private:
     double m_lastSample;
 };
 
-using InstrumentDefinition = au::dsp::Instrument<MultiVoice, 64, au::dsp::NoVoiceStealing>;
+//----------------------------------------------------------
+//  Instrument definition
+//----------------------------------------------------------
+using InstrumentDefinition =
+    au::dsp::Instrument<
+        MultiVoice,                     // Base voice model
+        64,                             // Polyphony
+        au::dsp::OldestVoiceStealing    // Voice stealing strategy
+    >;
+
 class Instrument : public InstrumentDefinition
 {
 public:
