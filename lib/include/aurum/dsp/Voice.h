@@ -3,7 +3,7 @@
 
 #include <memory>
 #include <vector>
-#include <queue>
+#include <deque>
 #include "aurum/dsp/Processor.h"
 
 namespace au {
@@ -134,7 +134,7 @@ public:
     bool allocate(const midi::Note &note, size_t &idx) override;
 
 private:
-    std::queue<size_t> m_allocationHistory;
+    std::deque<size_t> m_allocationHistory;
 };
 
 

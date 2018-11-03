@@ -1,3 +1,5 @@
+#include <cassert>
+#include <algorithm>
 #include "aurum/dsp/Voice.h"
 
 namespace au {
@@ -48,20 +50,22 @@ OldestVoiceStealing::OldestVoiceStealing(IVoiceList &vl)
 bool OldestVoiceStealing::allocate(const midi::Note &note, size_t &idx)
 {
     bool allocated = NoVoiceStealing::allocate(note, idx);
+
     if (allocated) {
-        m_allocationHistory.push(idx);
+        // Remove allocated voice from history
+        m_allocationHistory.erase(std::remove(m_allocationHistory.begin(),
+                                              m_allocationHistory.end(),
+                                              idx),
+                                  m_allocationHistory.end());
     } else {
-        // All voices are busy - get the oldest one
-        if (m_allocationHistory.size() > 0) {
-            idx = m_allocationHistory.front();
-            allocated = true;
-        }
+        assert(m_allocationHistory.size() > 0);
+        idx = m_allocationHistory.front();
+        m_allocationHistory.pop_front();
+        allocated = true;
     }
 
-    // Remove old allocations
-    while (m_allocationHistory.size() > voices().size()) {
-        m_allocationHistory.pop();
-    }
+    // Push allocated vice to the history queue
+    m_allocationHistory.push_back(idx);
 
     return allocated;
 }
