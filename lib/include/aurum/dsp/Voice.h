@@ -18,7 +18,7 @@ public:
 };
 
 /**
- * @brief Abstract synth voice.
+ * @brief Abstract voice of an instrument.
  */
 class Voice : public Processor,
               public INotesListener

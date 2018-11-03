@@ -53,7 +53,7 @@ void DebugConsole::writeLine(const char *str)
     snprintf(buf, 255, "%s\n", str);
 #ifdef WIN32
     DWORD written = 0;
-    WriteConsole(d->hConsole, buf, static_cast<DWORD>(strlen(buf)), &written, 0);
+    WriteConsole(d->hConsole, buf, static_cast<DWORD>(strlen(buf)), &written, NULL);
 #endif
 }
 

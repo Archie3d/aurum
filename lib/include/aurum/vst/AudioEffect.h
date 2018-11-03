@@ -4,6 +4,7 @@
 #include <memory>
 #include "pluginterfaces/base/funknown.h"
 #include "pluginterfaces/vst/ivstevents.h"
+#include "pluginterfaces/vst/ivstparameterchanges.h"
 #include "public.sdk/source/vst/vstaudioeffect.h"
 #include "aurum/Plugin.h"
 #include "aurum/vst/UID.h"
@@ -43,6 +44,8 @@ struct ParametersChange
     template <bool c=cond, typename std::enable_if<!c>::type* = nullptr>
     static void handle(P &p, Steinberg::Vst::ProcessData &data)
     {
+        (void)p;
+        (void)data;
     }
 
 };
@@ -88,6 +91,8 @@ struct MidiEvents
     template <bool c=cond, typename std::enable_if<!c>::type* = nullptr>
     static void handle(P &p, Steinberg::Vst::IEventList *pEventList)
     {
+        (void)p;
+        (void)pEventList;
     }
 
     template <bool c=cond, typename std::enable_if<c>::type* = nullptr>
@@ -99,6 +104,8 @@ struct MidiEvents
     template <bool c=cond, typename std::enable_if<!c>::type* = nullptr>
     static void addMidiInputBus(Steinberg::Vst::AudioEffect *pAE, int channels=16)
     {
+        (void)pAE;
+        (void)channels;
     }
 };
 
@@ -125,6 +132,8 @@ struct StereoOutput
     template <bool c=cond, typename std::enable_if<!c>::type* = nullptr>
     static void process(P &p, Steinberg::Vst::ProcessData &data)
     {
+        (void)p;
+        (void)data;
     }
 
     template <bool c=cond, typename std::enable_if<c>::type* = nullptr>
@@ -136,6 +145,7 @@ struct StereoOutput
     template <bool c=cond, typename std::enable_if<!c>::type* = nullptr>
     static void addAudioOutputBus(Steinberg::Vst::AudioEffect *pAE)
     {
+        (void)pAE;
     }
 
 };
@@ -158,7 +168,7 @@ public:
      */
     static Steinberg::FUnknown* createInstance(void*)
     {
-        return (Steinberg::Vst::IAudioProcessor*)new AudioEffect<A, U>();
+        return dynamic_cast<Steinberg::Vst::IAudioProcessor*>(new AudioEffect<A, U>());
     }
 
     AudioEffect()

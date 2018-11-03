@@ -132,7 +132,7 @@ void BiquadFilter::recalculate()
     case Type::Notch:
         m_b0 = 1.0;
         m_b1 = -2.0 * cos_w0;
-        m_b2 = 1.0f;
+        m_b2 = 1.0;
         m_a0 = 1.0 + alpha;
         m_a1 = -2.0 * cos_w0;
         m_a2 = 1.0 - alpha;

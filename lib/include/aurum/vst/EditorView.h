@@ -14,18 +14,21 @@ namespace nana {
 namespace au {
 namespace vst {
 
+/**
+ * @brief Plugin GUI view.
+ */
 class EditorView : public Steinberg::Vst::EditorView
 {
 public:
 
     /// Function to construct the view UI
-    typedef std::function<au::plugin::IView*(nana::form&)> ViewContructor;
+    using ViewContructor = std::function<au::plugin::IView*(nana::form&)>;
 
     EditorView(Steinberg::Vst::EditController *pController,
                Steinberg::ViewRect *pSize = nullptr);
     EditorView(const EditorView&) = delete;
     EditorView& operator =(const EditorView&) = delete;
-    ~EditorView();
+    ~EditorView() override;
 
     void setViewConstructor(ViewContructor cons);
     void setMinimumSize(int width, int height);

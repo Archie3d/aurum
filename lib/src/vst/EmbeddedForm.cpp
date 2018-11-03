@@ -73,7 +73,8 @@ struct EmbeddedForm::Impl
      */
     void resize(int width, int height)
     {
-        form.size(nana::size(width, height));
+        form.size(nana::size(static_cast<nana::size::value_type>(width),
+                             static_cast<nana::size::value_type>(height)));
         //::SetWindowPos(hWnd, HWND_TOP, 0, 0, width, height, SWP_SHOWWINDOW);
         //::ShowWindow(hWnd, SW_SHOW);
     }
@@ -83,9 +84,9 @@ struct EmbeddedForm::Impl
         form.show();
 
         // Hack: resizing the form forces it to repaint
-        int w = form.size().width;
-        int h = form.size().height;
-        resize(w+1, h);
+        auto w = static_cast<int>(form.size().width);
+        auto h = static_cast<int>(form.size().height);
+        resize(w + 1, h);
         resize(w, h);
     }
 
@@ -124,43 +125,46 @@ void EmbeddedForm::resize(int width, int height)
 
 int EmbeddedForm::width() const
 {
-    return d->form.size().width;
+    return static_cast<int>(d->form.size().width);
 }
 
 int EmbeddedForm::height() const
 {
-    return d->form.size().height;
+    return static_cast<int>(d->form.size().height);
 }
 
 int EmbeddedForm::minimumWidth() const
 {
-    return d->minimum_size.width;
+    return static_cast<int>(d->minimum_size.width);
 }
 
 int EmbeddedForm::minimumHeight() const
 {
-    return d->minimum_size.height;
+    return static_cast<int>(d->minimum_size.height);
 }
 
 void EmbeddedForm::minimumSize(int width, int height)
 {
-    d->minimum_size = nana::size(width, height);
-    d->form.size(nana::size(width, height));
+    auto size = nana::size(static_cast<nana::size::value_type>(width),
+                           static_cast<nana::size::value_type>(height));
+    d->minimum_size = size;
+    d->form.size(size);
 }
 
 int EmbeddedForm::maximumWidth() const
 {
-    return d->maximum_size.width;
+    return static_cast<int>(d->maximum_size.width);
 }
 
 int EmbeddedForm::maximumHeight() const
 {
-    return d->maximum_size.height;
+    return static_cast<int>(d->maximum_size.height);
 }
 
 void EmbeddedForm::maximumSize(int width, int height)
 {
-    d->maximum_size = nana::size(width, height);
+    d->maximum_size = nana::size(static_cast<nana::size::value_type>(width),
+                                 static_cast<nana::size::value_type>(height));
 }
 
 void EmbeddedForm::reset()

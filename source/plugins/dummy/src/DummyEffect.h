@@ -10,7 +10,7 @@ class DummyEffect : public au::plugin::AudioEffect,
 {
 public:
     DummyEffect();
-    ~DummyEffect();
+    ~DummyEffect() override;
 
     void setSampleRate(double sr) override;
     void start() override;

@@ -1,4 +1,3 @@
-#include <iostream>
 #include <cmath>
 #include "ids.h"
 #include "aurum/midi/Tuning.h"
@@ -50,12 +49,12 @@ public:
         return m_lastSample;
     }
 
-    double lastSample(int channel) const override
+    double lastSample(int /* channel */) const override
     {
         return m_lastSample;
     }
 
-    void noteOn(const au::midi::Note &note)
+    void noteOn(const au::midi::Note &note) override
     {
         double f = m_tuning.frequency(note);
         m_osc_sine.frequency(f);
@@ -66,8 +65,10 @@ public:
         setEnabled(true);
     }    
 
-    void noteOff(const au::midi::Note &note)
+    void noteOff(const au::midi::Note &note) override
     {
+        (void)note;
+
         m_adsr.triggerOff();
     }
 
@@ -183,7 +184,7 @@ public:
         m_filter.reset();
     }
 
-    double tickProcess(double *input, int nChannels)
+    double tickProcess(double *input, int nChannels) override
     {
         double dry = InstrumentDefinition::tickProcess(input, nChannels);
         m_lastSample = m_filter.tick(dry);
@@ -232,14 +233,12 @@ void DummyEffect::stop()
 
 void DummyEffect::noteOn(int number, float velocity)
 {
-    std::cout << "Note on " << number << " " << velocity << "\n";
-    d->instrument.noteOn(au::midi::Note(number, velocity));
+    d->instrument.noteOn(au::midi::Note(number, static_cast<double>(velocity)));
 }
 
 void DummyEffect::noteOff(int number, float velocity)
 {
-    std::cout << "Note off " << number << " " << velocity << "\n";
-    d->instrument.noteOff(au::midi::Note(number, velocity));
+    d->instrument.noteOff(au::midi::Note(number, static_cast<double>(velocity)));
 }
 
 void DummyEffect::parameterChanged(int id, double value)
@@ -285,8 +284,8 @@ void DummyEffect::process(float *pLeft, float *pRight, int nSamples)
     if (d->instrument.isEnabled()) {
         for (int i = 0; i < nSamples; i++) {
             d->instrument.tick();
-            pLeft[i] = (float)d->instrument.lastSample(0);
-            pRight[i] = (float)d->instrument.lastSample(1);
+            pLeft[i] = static_cast<float>(d->instrument.lastSample(0));
+            pRight[i] = static_cast<float>(d->instrument.lastSample(1));
         }
     }
 }

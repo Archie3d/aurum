@@ -40,7 +40,7 @@ public:
     // IProcessor
     void setEnabled(bool ena) override;
     double tickProcess(double *input, int nChannels) override;
-    double lastSample(int channel) const override { return m_envelope; }
+    double lastSample(int /* channel */) const override { return m_envelope; }
 
 private:
 

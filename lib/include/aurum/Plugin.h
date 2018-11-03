@@ -139,7 +139,7 @@ class Controller : public IController
 {
 public:
     Controller();
-    ~Controller();
+    ~Controller() override;
     void initialize() override {}
     void finalize() override {}
 
@@ -165,7 +165,7 @@ public:
 class View : public IView
 {
 public:
-    View(nana::form &form, IController &controller)
+    View(IController &controller)
         : m_controller(controller)
     {}
 
@@ -244,7 +244,7 @@ class AudioEffect : public IAudioEffect
 {
 public:
     AudioEffect();
-    ~AudioEffect();
+    ~AudioEffect() override;
     void setActive(bool a) override;
     bool isActive() const override;
 

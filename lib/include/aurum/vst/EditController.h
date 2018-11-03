@@ -28,6 +28,7 @@ struct MinimumViewSize
     template <bool c=cond, typename std::enable_if<!c>::type* = nullptr>
     static void set(EditorView *pEditorView)
     {
+        (void)pEditorView;
     }
 };
 
@@ -43,6 +44,7 @@ struct MaximumViewSize
     template <bool c=cond, typename std::enable_if<!c>::type* = nullptr>
     static void set(EditorView *pEditorView)
     {
+        (void)pEditorView;
     }
 };
 
@@ -60,7 +62,7 @@ public:
 
     static Steinberg::FUnknown* createInstance(void*)
     {
-        return (Steinberg::Vst::IEditController*)new EditController<C, V>();
+        return dynamic_cast<Steinberg::Vst::IEditController*>(new EditController<C, V>());
     }
 
     EditController()
@@ -127,10 +129,13 @@ public:
                                                               Steinberg::int16 channel,
                                                               Steinberg::Vst::CtrlNumber midiControllerNumber,
                                                               Steinberg::Vst::ParamID& tag) override {
+        (void)busIndex;
+        (void)channel;
+
         int id = 0;
         bool found = m_controller.parameters().findMidiCtrlMap(midiControllerNumber, id);
         if (found) {
-            tag = id;
+            tag = static_cast<Steinberg::Vst::ParamID>(id);
             return Steinberg::kResultOk;
         }
 

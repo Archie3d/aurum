@@ -46,7 +46,8 @@ double ParameterContainer::value(int id) const
 {
     double v = 0.0;
     if (d->pParameters != nullptr) {
-        Steinberg::Vst::Parameter *p = d->pParameters->getParameter(id);
+        Steinberg::Vst::Parameter *p =
+                d->pParameters->getParameter(static_cast<Steinberg::Vst::ParamID>(id));
         if (p != nullptr) {
             v = p->getNormalized();
         }
@@ -57,12 +58,13 @@ double ParameterContainer::value(int id) const
 void ParameterContainer::setValue(int id, double v)
 {
     if (d->pParameters != nullptr) {
-        Steinberg::Vst::Parameter *pParam = d->pParameters->getParameter(id);
+        auto paramId = static_cast<Steinberg::Vst::ParamID>(id);
+        Steinberg::Vst::Parameter *pParam = d->pParameters->getParameter(paramId);
         if (pParam != nullptr) {
             // The following will send parameters change event to the processor
-            d->pController->beginEdit(id);
-            d->pController->performEdit(id, v);
-            d->pController->endEdit(id);
+            d->pController->beginEdit(paramId);
+            d->pController->performEdit(paramId, v);
+            d->pController->endEdit(paramId);
 
             // Also we want to store parameter's value locally,
             // so that we can retreive it on the controllers/view side.
@@ -74,7 +76,7 @@ void ParameterContainer::setValue(int id, double v)
 ParameterContainer::Accessor ParameterContainer::operator [](int id)
 {
     if (d->pParameters != nullptr) {
-        auto *pParam = d->pParameters->getParameter(id);
+        auto *pParam = d->pParameters->getParameter(static_cast<Steinberg::Vst::ParamID>(id));
         if (pParam != nullptr) {
             return Accessor(*this, id, true);
         }
@@ -94,7 +96,7 @@ void ParameterContainer::add(int id, const std::string &name, double value, cons
                                                                          Steinberg::Vst::ParameterInfo::kCanAutomate,
                                                                          id);
         if (pParam != nullptr && midiCtrl > 0) {
-            d->midiCtrlParamMap[midiCtrl] = pParam->getInfo().id;
+            d->midiCtrlParamMap[static_cast<Steinberg::Vst::CtrlNumber>(midiCtrl)] = pParam->getInfo().id;
         }
     }
 }
@@ -102,9 +104,9 @@ void ParameterContainer::add(int id, const std::string &name, double value, cons
 bool ParameterContainer::findMidiCtrlMap(int midiCtrl, int &id) const
 {
     // Search midi-mapped parameters.
-    const auto it = d->midiCtrlParamMap.find(midiCtrl);
+    const auto it = d->midiCtrlParamMap.find(static_cast<Steinberg::Vst::CtrlNumber>(midiCtrl));
     if (it != d->midiCtrlParamMap.end()) {
-        id = it->second;
+        id = static_cast<int>(it->second);
         return true;
     }
     return false;

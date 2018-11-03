@@ -40,7 +40,7 @@ public:
         return m_lastSample;
     }
 
-    double lastSample(int channel) const override
+    double lastSample(int /* channel */) const override
     {
         return m_lastSample;
     }
@@ -101,7 +101,7 @@ public:
         return m_lastSample;
     }
 
-    double lastSample(int channel) const override
+    double lastSample(int /* channel */) const override
     {
         return m_lastSample;
     }

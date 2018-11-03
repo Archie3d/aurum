@@ -9,6 +9,7 @@ class DummyView : public au::plugin::View,
 {
 public:
     DummyView(nana::form &form, au::plugin::IController &controller);
+
 private:
     struct UI;
     std::unique_ptr<UI> ui;

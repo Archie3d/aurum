@@ -24,7 +24,7 @@ public:
 
     double tick(double x) override;
     void reset() override;
-    Complex frequencyResponse(double f) const;
+    Complex frequencyResponse(double f) const override;
 
     /// Recalculate filter's coefficients.
     void recalculate();

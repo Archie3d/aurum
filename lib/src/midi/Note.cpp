@@ -50,7 +50,7 @@ Note::Note(int number, double velocity)
 
 Note::Note(Key n, int octave)
 {
-    m_number = C0 + (int)n + octave * 12;
+    m_number = C0 + static_cast<int>(n) + octave * 12;
     clamp();
 }
 
